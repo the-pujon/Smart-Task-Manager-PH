@@ -10,13 +10,9 @@ const userValidationZodSchema = z.object({
         message: "Name must only contain letters and spaces",
       }),
     email: z.string().email({ message: "Invalid email address" }),
-    phone: z
-      .string()
-      .length(11, { message: "Phone number must be exactly 11 digits" })
-      .regex(/^\d+$/, { message: "Phone number must contain only digits" }),
     password: z
       .string()
-      .min(5, { message: "Password must be at least 5 characters" }),
+      .min(8, { message: "Password must be at least 8 characters" }),
   }),
 });
 

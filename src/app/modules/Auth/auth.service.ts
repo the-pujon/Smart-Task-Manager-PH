@@ -13,7 +13,7 @@ import {
 } from "./auth.interface";
 import { User } from "./auth.model";
 import config from "../../config";
-import { createToken, removeTokens, checkRateLimit, validatePassword, canModifyRole } from "./auth.utils";
+import { createToken, removeTokens, checkRateLimit, validatePassword } from "./auth.utils";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import {
@@ -549,34 +549,34 @@ const changeRole = async (
   email: string,
   newRole: UserRole,
   currentUser: JwtPayload
-): Promise<IUser> => {
-  try {
-    const user = await User.isUserExistsByEmail(email);
-    if (!user) {
-      throw new AppError(httpStatus.NOT_FOUND, "User not found!");
-    }
+) => {
+  // try {
+  //   const user = await User.isUserExistsByEmail(email);
+  //   if (!user) {
+  //     throw new AppError(httpStatus.NOT_FOUND, "User not found!");
+  //   }
 
-    if (!canModifyRole(currentUser.role, user.role, newRole)) {
-      throw new AppError(
-        httpStatus.FORBIDDEN,
-        "You don't have permission to perform this action"
-      );
-    }
+  //   if (!canModifyRole(currentUser.role, user.role, newRole)) {
+  //     throw new AppError(
+  //       httpStatus.FORBIDDEN,
+  //       "You don't have permission to perform this action"
+  //     );
+  //   }
 
-    const updatedUser = await User.findOneAndUpdate(
-      { email },
-      { role: newRole },
-      { new: true }
-    );
+  //   const updatedUser = await User.findOneAndUpdate(
+  //     { email },
+  //     { role: newRole },
+  //     { new: true }
+  //   );
 
-    if (!updatedUser) {
-      throw new AppError(httpStatus.BAD_REQUEST, "Failed to update user role");
-    }
+  //   if (!updatedUser) {
+  //     throw new AppError(httpStatus.BAD_REQUEST, "Failed to update user role");
+  //   }
 
-    return updatedUser;
-  } catch (error) {
-    throw error;
-  }
+  //   return updatedUser;
+  // } catch (error) {
+  //   throw error;
+  // }
 };
 
 /**
@@ -585,42 +585,42 @@ const changeRole = async (
 const deleteUser = async (
   id: string,
   currentUser: JwtPayload
-): Promise<IUser> => {
-  try {
-    const user = await User.findById(id);
-    if (!user) {
-      throw new AppError(httpStatus.NOT_FOUND, "User not found!");
-    }
+) => {
+  // try {
+  //   const user = await User.findById(id);
+  //   if (!user) {
+  //     throw new AppError(httpStatus.NOT_FOUND, "User not found!");
+  //   }
 
-    if (currentUser.role !== UserRole.SUPER_ADMIN) {
-      throw new AppError(httpStatus.FORBIDDEN, "Only super admin can delete users");
-    }
+  //   if (currentUser.role !== UserRole.SUPER_ADMIN) {
+  //     throw new AppError(httpStatus.FORBIDDEN, "Only super admin can delete users");
+  //   }
 
-    if (user.role === UserRole.SUPER_ADMIN) {
-      throw new AppError(httpStatus.FORBIDDEN, "Cannot delete super admin");
-    }
+  //   if (user.role === UserRole.SUPER_ADMIN) {
+  //     throw new AppError(httpStatus.FORBIDDEN, "Cannot delete super admin");
+  //   }
 
-    if (user.email === currentUser.email) {
-      throw new AppError(httpStatus.FORBIDDEN, "Cannot delete your own account");
-    }
+  //   if (user.email === currentUser.email) {
+  //     throw new AppError(httpStatus.FORBIDDEN, "Cannot delete your own account");
+  //   }
 
-    const deletedUser = await User.findByIdAndDelete(id);
-    if (!deletedUser) {
-      throw new AppError(httpStatus.BAD_REQUEST, "Failed to delete user");
-    }
+  //   const deletedUser = await User.findByIdAndDelete(id);
+  //   if (!deletedUser) {
+  //     throw new AppError(httpStatus.BAD_REQUEST, "Failed to delete user");
+  //   }
 
-    // Clear user's cached data
-    await Promise.all([
-      deleteCachedData(`${config.redis_cache_key_prefix}:user:${user.email}:accessToken`),
-      deleteCachedData(`${config.redis_cache_key_prefix}:user:${user.email}:refreshToken`),
-      deleteCachedData(`${config.redis_cache_key_prefix}:${AUTH_CONFIG.CACHE_PREFIXES.VERIFICATION}${user.email}`),
-      deleteCachedData(`${config.redis_cache_key_prefix}:${AUTH_CONFIG.CACHE_PREFIXES.RESET_PASSWORD}${user.email}`)
-    ]);
+  //   // Clear user's cached data
+  //   await Promise.all([
+  //     deleteCachedData(`${config.redis_cache_key_prefix}:user:${user.email}:accessToken`),
+  //     deleteCachedData(`${config.redis_cache_key_prefix}:user:${user.email}:refreshToken`),
+  //     deleteCachedData(`${config.redis_cache_key_prefix}:${AUTH_CONFIG.CACHE_PREFIXES.VERIFICATION}${user.email}`),
+  //     deleteCachedData(`${config.redis_cache_key_prefix}:${AUTH_CONFIG.CACHE_PREFIXES.RESET_PASSWORD}${user.email}`)
+  //   ]);
 
-    return deletedUser;
-  } catch (error) {
-    throw error;
-  }
+  //   return deletedUser;
+  // } catch (error) {
+  //   throw error;
+  // }
 };
 
 export const AuthServices = {

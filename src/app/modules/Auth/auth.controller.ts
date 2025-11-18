@@ -13,6 +13,7 @@ import { deleteCachedData } from "../../utils/redis.utils";
  */
 const signupUser = catchAsync(async (req, res) => {
   const { ...userData } = req.body;
+  console.log("userdata", userData)
   const { newUser } = await AuthServices.signupUser(userData);
 
   sendResponse(res, {
@@ -115,6 +116,7 @@ const loginUser = catchAsync(async (req, res) => {
         isVerified: user.isVerified,
       },
       accessToken,
+      refreshToken,
     },
   });
 });
@@ -247,55 +249,55 @@ const getUsers = catchAsync(async (req, res) => {
  * Changes user role with proper authorization checks
  */
 const changeRole = catchAsync(async (req, res) => {
-  const { email, newRole } = req.body;
-  const currentUser = req.user;
+  // const { email, newRole } = req.body;
+  // const currentUser = req.user;
 
-  if (!email || !newRole) {
-    throw new AppError(httpStatus.BAD_REQUEST, "Email and new role are required");
-  }
+  // if (!email || !newRole) {
+  //   throw new AppError(httpStatus.BAD_REQUEST, "Email and new role are required");
+  // }
 
-  const updatedUser = await AuthServices.changeRole(email, newRole, currentUser);
+  // const updatedUser = await AuthServices.changeRole(email, newRole, currentUser);
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "User role updated successfully",
-    data: {
-      user: {
-        name: updatedUser.name,
-        email: updatedUser.email,
-        role: updatedUser.role,
-        isVerified: updatedUser.isVerified,
-      },
-    },
-  });
+  // sendResponse(res, {
+  //   statusCode: httpStatus.OK,
+  //   success: true,
+  //   message: "User role updated successfully",
+  //   data: {
+  //     user: {
+  //       name: updatedUser.name,
+  //       email: updatedUser.email,
+  //       role: updatedUser.role,
+  //       isVerified: updatedUser.isVerified,
+  //     },
+  //   },
+  // });
 });
 
 /**
  * Deletes user with proper authorization checks
  */
 const deleteUser = catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const currentUser = req.user;
+  // const { id } = req.params;
+  // const currentUser = req.user;
 
-  if (!id) {
-    throw new AppError(httpStatus.BAD_REQUEST, "User ID is required");
-  }
+  // if (!id) {
+  //   throw new AppError(httpStatus.BAD_REQUEST, "User ID is required");
+  // }
 
-  const deletedUser = await AuthServices.deleteUser(id, currentUser);
+  // const deletedUser = await AuthServices.deleteUser(id, currentUser);
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "User deleted successfully",
-    data: {
-      user: {
-        name: deletedUser.name,
-        email: deletedUser.email,
-        role: deletedUser.role,
-      },
-    },
-  });
+  // sendResponse(res, {
+  //   statusCode: httpStatus.OK,
+  //   success: true,
+  //   message: "User deleted successfully",
+  //   data: {
+  //     user: {
+  //       name: deletedUser.name,
+  //       email: deletedUser.email,
+  //       role: deletedUser.role,
+  //     },
+  //   },
+  // });
 });
 
 export const AuthControllers = {

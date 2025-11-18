@@ -1,17 +1,17 @@
 import { Model } from "mongoose";
 
 export enum UserRole {
-  SUPER_ADMIN = "superAdmin",
-  ADMIN = "admin",
-  MODERATOR = "moderator",
-  CUSTOMER = "customer",
-  SELLER = "seller",
+  ADMIN = 'admin',
+  PROJECT_MANAGER = 'project_manager',
+  BACKEND_DEVELOPER = 'backend_developer',
+  FRONTEND_DEVELOPER = 'frontend_developer',
+  SQA_ENGINEER = 'sqa_engineer',
+  CUSTOMER = 'customer',
 }
 
 export interface IUser {
   name: string;
   email: string;
-  phone: string;
   password: string;
   role: UserRole;
   lastLogin: Date;

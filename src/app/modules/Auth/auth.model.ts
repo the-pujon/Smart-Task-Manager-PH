@@ -23,13 +23,6 @@ const userSchema = new Schema<IUser>(
       match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email address'],
       index: true,
     },
-    phone: {
-      type: String,
-      required: [true, 'Phone number is required'],
-      unique: true,
-      trim: true,
-      match: [/^\+?[\d\s-]{10,}$/, 'Please enter a valid phone number'],
-    },
     password: {
       type: String,
       required: [true, 'Password is required'],
@@ -42,7 +35,7 @@ const userSchema = new Schema<IUser>(
         values: Object.values(UserRole),
         message: '{VALUE} is not a valid role',
       },
-      default: UserRole.CUSTOMER,
+      default: UserRole.PROJECT_MANAGER,
     },
     lastLogin: {
       type: Date,

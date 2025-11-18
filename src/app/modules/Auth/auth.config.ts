@@ -1,4 +1,4 @@
-import { UserRole } from './auth.interface';
+// import { UserRole } from './auth.interface';
 
 export const AUTH_CONFIG = {
   // Token settings
@@ -19,25 +19,25 @@ export const AUTH_CONFIG = {
   RATE_LIMIT: {
     LOGIN: {
       WINDOW_MS: 15 * 60 * 1000, // 15 minutes
-      MAX_ATTEMPTS: 5,
+      MAX_ATTEMPTS: 50,
     },
     SIGNUP: {
       WINDOW_MS: 60 * 60 * 1000, // 1 hour
-      MAX_ATTEMPTS: 3,
+      MAX_ATTEMPTS: 30,
     },
     PASSWORD_RESET: {
       WINDOW_MS: 60 * 60 * 1000, // 1 hour
-      MAX_ATTEMPTS: 3,
+      MAX_ATTEMPTS: 30,
     },
   },
 
   // Role hierarchy
-  ROLE_HIERARCHY: {
-    [UserRole.SUPER_ADMIN]: 4,
-    [UserRole.ADMIN]: 3,
-    [UserRole.MODERATOR]: 2,
-    [UserRole.CUSTOMER]: 1,
-  },
+  // ROLE_HIERARCHY: {
+  //   [UserRole.SUPER_ADMIN]: 4,
+  //   [UserRole.ADMIN]: 3,
+  //   [UserRole.MODERATOR]: 2,
+  //   [UserRole.CUSTOMER]: 1,
+  // },
 
   // Security settings
   PASSWORD_MIN_LENGTH: 8,
