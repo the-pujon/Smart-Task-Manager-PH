@@ -26,9 +26,21 @@ const memberSchema = new Schema({
     team: { type: Schema.Types.ObjectId, ref: "Team", required: true },
     totalTasks: { type: Number, default: 0 },
     tasksCompleted: { type: Number, default: 0 },
+    overloaded: { type: Boolean, default: false },
     // taskAssigned: [{ type: Schema.Types.ObjectId, ref: "Task" }],
 },
 { timestamps: true }
 )
+
+
+memberSchema.pre('save', function (next) {
+    if (this.totalTasks > this.capacity) {
+        this.overloaded = true;
+    } else {
+        this.overloaded = false;
+    }
+    next();
+});
+
 
 export const Member = model('Member', memberSchema);
