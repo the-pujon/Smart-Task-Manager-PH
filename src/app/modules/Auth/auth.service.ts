@@ -25,6 +25,7 @@ import { JsonWebTokenError, JwtPayload, TokenExpiredError } from "jsonwebtoken";
 import jwt from "jsonwebtoken";
 import { AUTH_CONFIG } from "./auth.config";
 import { setImmediate } from "timers";
+import { Types } from "mongoose";
 
 // Constants for configuration
 const VERIFICATION_TOKEN_LENGTH = 6;
@@ -277,6 +278,7 @@ const loginUser = async (payload: ILoginUser): Promise<{ user: IUser; accessToke
     const jwtPayload: ITokenPayload = {
       email: user.email,
       role: user.role,
+      userId: user._id?.toString() as string,
     };
 
     const accessToken = createToken(jwtPayload);
@@ -511,6 +513,7 @@ const refreshTokenService = async (res: any, token?: any) => {
     const jwtPayload = {
       email: user.email,
       role: user.role as UserRole,
+      userId: user._id?.toString() as string,
     };
 
     const accessToken = createToken(jwtPayload);

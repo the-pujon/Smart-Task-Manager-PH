@@ -7,6 +7,7 @@ import { ProjectsService } from "./projects.service";
 const createProjectController = catchAsync(async (req, res) => {
     const projectData = req.body;
     const userId = req.user?.userId; // Get user ID from authenticated request
+    console.log("userId", userId)
     const newProject = await ProjectsService.createProjectService(projectData, false, userId);
   
     sendResponse(res, {

@@ -16,7 +16,7 @@ const activityLogSchema = new Schema<IActivityLog>(
     },
     user: {
       type: Schema.Types.ObjectId,
-      ref: "Auth",
+      ref: "User",
     },
     project: {
       type: Schema.Types.ObjectId,

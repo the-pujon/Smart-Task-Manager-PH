@@ -7,7 +7,7 @@ import { TasksService } from "./tasks.service";
 const createTaskController = catchAsync(async (req, res) => {
     const taskData = req.body;
     const autoReassign = req.query.autoReassign === "true" || req.body.autoReassign === true;
-    const userId = req.user?.userId; // Get user ID from authenticated request
+    const userId = req.user?.userId || "User"; // Get user ID from authenticated request
     
     const result = await TasksService.createTaskService(taskData, autoReassign, userId);
   

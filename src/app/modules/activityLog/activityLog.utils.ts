@@ -13,6 +13,7 @@ export const logProjectCreation = async (
   teamId: string | Types.ObjectId,
   userId?: string | Types.ObjectId
 ) => {
+    console.log("loging")
   try {
     await ActivityLogService.createActivityLogService({
       activityType: "PROJECT_CREATED",

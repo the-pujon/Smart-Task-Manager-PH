@@ -1,4 +1,4 @@
-import { Model } from "mongoose";
+import { Model, Types } from "mongoose";
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -7,9 +7,11 @@ export enum UserRole {
   FRONTEND_DEVELOPER = 'frontend_developer',
   SQA_ENGINEER = 'sqa_engineer',
   CUSTOMER = 'customer',
+  SUPER_ADMIN = 'super_admin',
 }
 
 export interface IUser {
+  _id?: Types.ObjectId;
   name: string;
   email: string;
   password: string;
@@ -42,6 +44,7 @@ export interface IUserModel extends Model<IUser> {
 export interface ITokenPayload {
   email: string;
   role: UserRole;
+  userId: string;
   iat?: number;
   exp?: number;
 }

@@ -88,11 +88,14 @@ import config from "../config";
 import { User } from "../modules/Auth/auth.model";
 import catchAsync from "../utils/catchAsync";
 
-export const auth = (...requiredRoles: ("admin" | "moderator" | "superAdmin" | "customer" | "seller")[]) => {
+export const auth = (...requiredRoles: ("admin" | "superAdmin" | "project_manager" | "backend_developer" | "frontend_developer" | "sqa_engineer" | "customer")[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.cookies.accessToken;
+    // const token = req.cookies.accessToken;
+    const token = req.headers.authorization?.split(" ")[1];
 
-    // console.log("here is the token", token)
+
+
+    console.log("here is the token", token)
 
     if (!token) {
       throw new AppError(
