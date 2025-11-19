@@ -6,7 +6,7 @@ import { AuthServices } from "../../../app/modules/Auth/auth.service";
 import { cacheData, deleteCachedData } from "../../../app/utils/redis.utils";
 import { getCachedData } from "../../../app/utils/redis.utils";
 import { sendEmail } from "../../../app/utils/sendEmail";
-import { checkRateLimit, removeTokens, canModifyRole } from "../../../app/modules/Auth/auth.utils";
+import { checkRateLimit, removeTokens } from "../../../app/modules/Auth/auth.utils";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { TokenExpiredError } from "jsonwebtoken";
 
@@ -30,7 +30,6 @@ const mockUserData: Partial<IUser> = {
   name: "Test User",
   email: "test@example.com",
   password: "Test@123456",
-  phone: "1234567890",
   role: UserRole.CUSTOMER,
   accountLocked: false,
   failedLoginAttempts: 0,
@@ -517,7 +516,7 @@ describe("AuthService", () => {
       
       (User.isUserExistsByEmail as jest.Mock).mockResolvedValue(mockUser);
       (User.findOneAndUpdate as jest.Mock).mockResolvedValue(mockUser);
-      (canModifyRole as jest.Mock).mockReturnValue(false);
+      // (canModifyRole as jest.Mock).mockReturnValue(false);
 
       await expect(AuthServices.changeRole("test@example.com", UserRole.ADMIN, {email: "test@example.com", role: UserRole.CUSTOMER})).rejects.toThrow(new AppError(httpStatus.FORBIDDEN, "You don't have permission to perform this action"));
     })
@@ -530,7 +529,7 @@ describe("AuthService", () => {
 
       (User.isUserExistsByEmail as jest.Mock).mockResolvedValue(mockUser);
       (User.findOneAndUpdate as jest.Mock).mockResolvedValue(mockUser);
-      (canModifyRole as jest.Mock).mockReturnValue(true);
+      // (canModifyRole as jest.Mock).mockReturnValue(true);
 
       const result = await AuthServices.changeRole("test@example.com", UserRole.ADMIN, {email: "test@example.com", role: UserRole.CUSTOMER});
       
