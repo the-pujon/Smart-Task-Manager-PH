@@ -6,6 +6,7 @@ const projectSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String },
   assignedTeam: { type: Types.ObjectId, ref: "Team", required: true },
+  tasks: [{ type: Types.ObjectId, ref: "Task" }],
 
   // optional status, dueDate, tags
   status: { type: String, enum: ["Active", "Archived", "Completed"], default: "Active" },

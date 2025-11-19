@@ -6,7 +6,8 @@ import { ProjectsService } from "./projects.service";
 
 const createProjectController = catchAsync(async (req, res) => {
     const projectData = req.body;
-    const newProject = await ProjectsService.createProjectService(projectData);
+    const userId = req.user?.userId; // Get user ID from authenticated request
+    const newProject = await ProjectsService.createProjectService(projectData, false, userId);
   
     sendResponse(res, {
       statusCode: 201,
@@ -16,6 +17,18 @@ const createProjectController = catchAsync(async (req, res) => {
     });
 })
 
+const getProjectsController = catchAsync(async (req, res) => {
+    const projects = await ProjectsService.getProjectsService();
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Projects fetched successfully",
+        data: projects,
+    });
+});
+
 export const ProjectsController = {
     createProjectController,
+    getProjectsController,
 }

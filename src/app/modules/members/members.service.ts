@@ -6,6 +6,7 @@ import { Team } from "../teams/teams.model";
 import { IMember } from "./members.interface";
 import { Member } from "./members.model";
 import { Types } from "mongoose";
+import { recalculateTeamMemberStats, updateMemberTaskStats } from "./members.utils";
 
 const createMembersService = async (payload: IMember) => {
   try {
@@ -94,9 +95,69 @@ const updateMembersService = async (memberId: string, payload: Partial<IMember>)
     }
 }
 
+/**
+ * Recalculate task statistics for a specific member
+ * @param memberId - The member ID to recalculate stats for
+ */
+const recalculateMemberStatsService = async (memberId: string) => {
+  try {
+    if (!Types.ObjectId.isValid(memberId)) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Invalid member ID");
+    }
+
+    const updatedMember = await updateMemberTaskStats(memberId);
+
+    return {
+      success: true,
+      message: "Member statistics recalculated successfully",
+      member: {
+        id: updatedMember._id.toString(),
+        name: updatedMember.name,
+        totalTasks: updatedMember.totalTasks,
+        tasksCompleted: updatedMember.tasksCompleted,
+        capacity: updatedMember.capacity,
+        overloaded: updatedMember.overloaded,
+      },
+    };
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      (error as Error).message || "Failed to recalculate member stats"
+    );
+  }
+};
+
+/**
+ * Recalculate task statistics for all members in a team
+ * @param teamId - The team ID to recalculate stats for
+ */
+const recalculateTeamStatsService = async (teamId: string) => {
+  try {
+    if (!Types.ObjectId.isValid(teamId)) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Invalid team ID");
+    }
+
+    const result = await recalculateTeamMemberStats(teamId);
+
+    return {
+      message: `Successfully recalculated stats for ${result.membersUpdated} member(s)`,
+      ...result,
+    };
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      (error as Error).message || "Failed to recalculate team stats"
+    );
+  }
+};
+
 export const MemberService = {
   createMembersService,
   getMembersService,
   deleteMembersService,
   updateMembersService,
+  recalculateMemberStatsService,
+  recalculateTeamStatsService,
 };

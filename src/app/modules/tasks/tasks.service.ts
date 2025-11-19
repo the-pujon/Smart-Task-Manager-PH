@@ -5,8 +5,12 @@ import AppError from "../../errors/AppError";
 import { ITask } from "./tasks.interface";
 import { Project } from "../projects/projects.model";
 import { Member } from "../members/members.model";
+import { Task } from "./tasks.model";
+import { checkAndReassignIfOverloaded, reassignTasksForOverloadedMembers } from "./tasks.utils";
+import { Types } from "mongoose";
+import { logTaskAssignment } from "../activityLog/activityLog.utils";
 
-const createTaskService = async (payload: ITask) => {
+const createTaskService = async (payload: ITask, autoReassign: boolean = false, userId?: string) => {
   try {
     const projectExists = await Project.findById(payload.project);
     if (!projectExists) {
@@ -14,6 +18,7 @@ const createTaskService = async (payload: ITask) => {
     }
 
     let memberExists;
+    let reassignmentResult = null;
 
     if (payload.assignedMember) {
       memberExists = await Member.findById(payload.assignedMember);
@@ -25,12 +30,43 @@ const createTaskService = async (payload: ITask) => {
       }
     }
 
-    const newTask = await Project.create(payload);
+    const newTask = await Task.create(payload);
+    
     if (memberExists) {
       memberExists.totalTasks += 1;
       await memberExists.save();
+
+      // Log task assignment activity
+      await logTaskAssignment(
+        newTask._id,
+        newTask.title,
+        payload.project,
+        memberExists._id,
+        userId
+      );
+
+      // Check if member is overloaded and trigger auto-reassignment if enabled
+      if (autoReassign) {
+        reassignmentResult = await checkAndReassignIfOverloaded(
+          memberExists._id,
+          autoReassign
+        );
+      }
     }
-    return newTask;
+    
+    projectExists.tasks.push(newTask._id);
+    await projectExists.save();
+
+    // Populate the task before returning
+    const populatedTask = await Task.findById(newTask._id)
+      .populate("project", { tasks: 0 })
+      .populate("assignedMember");
+
+    return {
+      task: populatedTask,
+      reassignmentPerformed: reassignmentResult !== null,
+      reassignmentDetails: reassignmentResult,
+    };
   } catch (error) {
     if (error instanceof AppError) throw error;
     throw new AppError(
@@ -40,6 +76,77 @@ const createTaskService = async (payload: ITask) => {
   }
 };
 
+const getTasksService = async () => {
+  try {
+    const tasks = await Task.find()
+      .populate("project", {tasks: 0})
+      .populate("assignedMember");
+    return tasks;
+  } catch (error) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      (error as Error).message || "Failed to fetch tasks"
+    );
+  }
+};
+
+/**
+ * Manual reassignment service - triggers task reassignment for a specific team
+ * @param teamId - The team ID to perform reassignment for
+ */
+const reassignTasksService = async (teamId: string) => {
+  console.log(teamId)
+  try {
+    // Validate team ID
+    if (!Types.ObjectId.isValid(teamId)) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Invalid team ID");
+    }
+
+    // Perform reassignment
+    const result = await reassignTasksForOverloadedMembers(teamId);
+
+    if (!result.success) {
+      throw new AppError(httpStatus.BAD_REQUEST, result.message);
+    }
+
+    return result;
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      (error as Error).message || "Failed to reassign tasks"
+    );
+  }
+};
+
+/**
+ * Get overloaded members in a team
+ * @param teamId - The team ID to check for overloaded members
+ */
+const getOverloadedMembersService = async (teamId: string) => {
+  try {
+    // Validate team ID
+    if (!Types.ObjectId.isValid(teamId)) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Invalid team ID");
+    }
+
+    const overloadedMembers = await Member.find({
+      team: teamId,
+      overloaded: true,
+    }).select("name role capacity totalTasks");
+
+    return overloadedMembers;
+  } catch (error) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      (error as Error).message || "Failed to fetch overloaded members"
+    );
+  }
+};
+
 export const TasksService = {
   createTaskService,
+  getTasksService,
+  reassignTasksService,
+  getOverloadedMembersService,
 };

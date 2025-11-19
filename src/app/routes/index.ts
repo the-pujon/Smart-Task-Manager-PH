@@ -3,7 +3,8 @@ import { AuthRoutes } from '../modules/Auth/auth.route';
 import { TeamRoutes } from '../modules/teams/teams.route';
 import { MemberRoutes } from '../modules/members/members.route';
 import { ProjectsRoutes } from '../modules/projects/projects.route';
-import { TaskRoutes } from '../modules/tasks/tasks.route';
+import { TasksRoutes } from '../modules/tasks/tasks.route';
+import { ActivityLogRoutes } from '../modules/activityLog/activityLog.route';
 
 
 
@@ -28,7 +29,11 @@ const moduleRoutes = [
   },
   {
     path: '/tasks',
-    route: TaskRoutes,
+    route: TasksRoutes,
+  },
+  {
+    path: '/activity-logs',
+    route: ActivityLogRoutes,
   }
 ];
 

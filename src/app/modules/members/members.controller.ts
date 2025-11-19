@@ -50,9 +50,39 @@ const updateMemberController = catchAsync(async (req, res) => {
     });
 });
 
+/**
+ * Recalculate task statistics for a specific member
+ */
+const recalculateMemberStatsController = catchAsync(async (req, res) => {
+    const memberId = req.params.memberId;
+    const result = await MemberService.recalculateMemberStatsService(memberId);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: result.message,
+        data: result.member,
+    });
+});
+
+/**
+ * Recalculate task statistics for all members in a team
+ */
+const recalculateTeamStatsController = catchAsync(async (req, res) => {
+    const teamId = req.params.teamId;
+    const result = await MemberService.recalculateTeamStatsService(teamId);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: result.message,
+        data: result.members,
+    });
+});
+
 export const MemberController = {
     createMemberController,
     getMembersController,
     deleteMemberController,
     updateMemberController,
-}
+    recalculateMemberStatsController,
+    recalculateTeamStatsController,
+};
