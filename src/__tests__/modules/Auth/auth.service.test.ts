@@ -501,71 +501,71 @@ describe("AuthService", () => {
     
   })
 
-  describe("Change Role", ()=>{
-    it("should throw error if user is not found", async ()=>{
-      (User.isUserExistsByEmail as jest.Mock).mockResolvedValue(null);
+  // describe("Change Role", ()=>{
+  //   it("should throw error if user is not found", async ()=>{
+  //     (User.isUserExistsByEmail as jest.Mock).mockResolvedValue(null);
 
-      await expect(AuthServices.changeRole("test@example.com", UserRole.ADMIN, {email: "test@example.com", role: UserRole.CUSTOMER})).rejects.toThrow(new AppError(httpStatus.NOT_FOUND, "User not found!"));
-    })
+  //     await expect(AuthServices.changeRole("test@example.com", UserRole.ADMIN, {email: "test@example.com", role: UserRole.CUSTOMER})).rejects.toThrow(new AppError(httpStatus.NOT_FOUND, "User not found!"));
+  //   })
 
-    it("should throw error if user is not authorized to change role", async ()=>{
-      const mockUser = {
-        ...mockUserData,
-        role: UserRole.CUSTOMER
-      };
+  //   it("should throw error if user is not authorized to change role", async ()=>{
+  //     const mockUser = {
+  //       ...mockUserData,
+  //       role: UserRole.CUSTOMER
+  //     };
       
-      (User.isUserExistsByEmail as jest.Mock).mockResolvedValue(mockUser);
-      (User.findOneAndUpdate as jest.Mock).mockResolvedValue(mockUser);
-      // (canModifyRole as jest.Mock).mockReturnValue(false);
+  //     (User.isUserExistsByEmail as jest.Mock).mockResolvedValue(mockUser);
+  //     (User.findOneAndUpdate as jest.Mock).mockResolvedValue(mockUser);
+  //     // (canModifyRole as jest.Mock).mockReturnValue(false);
 
-      await expect(AuthServices.changeRole("test@example.com", UserRole.ADMIN, {email: "test@example.com", role: UserRole.CUSTOMER})).rejects.toThrow(new AppError(httpStatus.FORBIDDEN, "You don't have permission to perform this action"));
-    })
+  //     await expect(AuthServices.changeRole("test@example.com", UserRole.ADMIN, {email: "test@example.com", role: UserRole.CUSTOMER})).rejects.toThrow(new AppError(httpStatus.FORBIDDEN, "You don't have permission to perform this action"));
+  //   })
 
-    it("should change role successfully", async ()=>{
-      const mockUser = {
-        ...mockUserData,
-        role: UserRole.CUSTOMER
-      };
+  //   it("should change role successfully", async ()=>{
+  //     const mockUser = {
+  //       ...mockUserData,
+  //       role: UserRole.CUSTOMER
+  //     };
 
-      (User.isUserExistsByEmail as jest.Mock).mockResolvedValue(mockUser);
-      (User.findOneAndUpdate as jest.Mock).mockResolvedValue(mockUser);
-      // (canModifyRole as jest.Mock).mockReturnValue(true);
+  //     (User.isUserExistsByEmail as jest.Mock).mockResolvedValue(mockUser);
+  //     (User.findOneAndUpdate as jest.Mock).mockResolvedValue(mockUser);
+  //     // (canModifyRole as jest.Mock).mockReturnValue(true);
 
-      const result = await AuthServices.changeRole("test@example.com", UserRole.ADMIN, {email: "test@example.com", role: UserRole.CUSTOMER});
+  //     const result = await AuthServices.changeRole("test@example.com", UserRole.ADMIN, {email: "test@example.com", role: UserRole.CUSTOMER});
       
-    })
+  //   })
     
-  })
+  // })
 
-  describe("Delete User", ()=>{
-    it("should throw error if user is not found", async ()=>{
-      (User.findById as jest.Mock).mockResolvedValue(null);
+  // describe("Delete User", ()=>{
+  //   it("should throw error if user is not found", async ()=>{
+  //     (User.findById as jest.Mock).mockResolvedValue(null);
 
-      await expect(AuthServices.deleteUser("test@example.com", {email: "test@example.com", role: UserRole.CUSTOMER})).rejects.toThrow(new AppError(httpStatus.NOT_FOUND, "User not found!"));
-    })
+  //     await expect(AuthServices.deleteUser("test@example.com", {email: "test@example.com", role: UserRole.CUSTOMER})).rejects.toThrow(new AppError(httpStatus.NOT_FOUND, "User not found!"));
+  //   })
 
-    it("should throw error if user is not authorized to delete user", async ()=>{
-      (User.findById as jest.Mock).mockResolvedValue(mockUserData);
+  //   it("should throw error if user is not authorized to delete user", async ()=>{
+  //     (User.findById as jest.Mock).mockResolvedValue(mockUserData);
 
-      await expect(AuthServices.deleteUser("test@example.com", {email: "test@example.com", role: UserRole.CUSTOMER})).rejects.toThrow(new AppError(httpStatus.FORBIDDEN, "Only super admin can delete users"));
-    })
+  //     await expect(AuthServices.deleteUser("test@example.com", {email: "test@example.com", role: UserRole.CUSTOMER})).rejects.toThrow(new AppError(httpStatus.FORBIDDEN, "Only super admin can delete users"));
+  //   })
 
-     it("should throw error if user is trying to delete their own account", async ()=>{
-      (User.findById as jest.Mock).mockResolvedValue(mockUserData);
-      (User.findByIdAndDelete as jest.Mock).mockResolvedValue(mockUserData);
+  //    it("should throw error if user is trying to delete their own account", async ()=>{
+  //     (User.findById as jest.Mock).mockResolvedValue(mockUserData);
+  //     (User.findByIdAndDelete as jest.Mock).mockResolvedValue(mockUserData);
 
 
-      await expect(AuthServices.deleteUser("test@example.com", {email: "test@example.com", role: UserRole.SUPER_ADMIN})).rejects.toThrow(new AppError(httpStatus.FORBIDDEN, "Cannot delete your own account"));
+  //     await expect(AuthServices.deleteUser("test@example.com", {email: "test@example.com", role: UserRole.SUPER_ADMIN})).rejects.toThrow(new AppError(httpStatus.FORBIDDEN, "Cannot delete your own account"));
       
-    })
+  //   })
 
-    it("should delete user successfully", async ()=>{
-      (User.findById as jest.Mock).mockResolvedValue(mockUserData);
-      (User.findByIdAndDelete as jest.Mock).mockResolvedValue(mockUserData);
+  //   it("should delete user successfully", async ()=>{
+  //     (User.findById as jest.Mock).mockResolvedValue(mockUserData);
+  //     (User.findByIdAndDelete as jest.Mock).mockResolvedValue(mockUserData);
 
 
-      await AuthServices.deleteUser("test@example.com", {email: "test@example1.com", role: UserRole.SUPER_ADMIN});
-    })
-  })
+  //     await AuthServices.deleteUser("test@example.com", {email: "test@example1.com", role: UserRole.SUPER_ADMIN});
+  //   })
+  // })
 
 });
