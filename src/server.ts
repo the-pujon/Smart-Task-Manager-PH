@@ -44,14 +44,33 @@ import mongoose from 'mongoose';
 let server: Server;
 const port = Number(config.port) || 5000; // fallback port
 
+// MongoDB connection cache for serverless
+let cachedDb: typeof mongoose | null = null;
+
+async function connectDB() {
+  if (cachedDb) {
+    console.log('✅ Using cached MongoDB connection');
+    return cachedDb;
+  }
+
+  try {
+    const db = await mongoose.connect(config.database_url as string);
+    cachedDb = db;
+    console.log("✅ MongoDB database connected successfully");
+    return db;
+  } catch (err) {
+    console.error("❌ MongoDB Connection Error:", err);
+    throw err;
+  }
+}
+
 async function main() {
   try {
     if (!config.jwt_access_secret) {
       throw new Error("❌ JWT_ACCESS_SECRET is not set. Check your .env or PM2 env settings.");
     }
 
-    await mongoose.connect(config.database_url as string);
-    console.log("✅ Mongodb database connected successfully");
+    await connectDB();
 
     server = app.listen(port, '0.0.0.0', () => {
       console.log(`🚀 App is listening on port ${port}`);
@@ -61,17 +80,27 @@ async function main() {
     console.error("❌ Startup Error:", err);
   }
 }
-main();
 
-// graceful shutdown
-process.on('unhandledRejection', (err) => {
-  console.log(`❌ UnhandledRejection detected, shutting down...`, err);
-  if (server) {
-    server.close(() => process.exit(1));
-  }
-});
+// Only run the server if not in serverless environment (Vercel)
+if (process.env.VERCEL !== '1') {
+  main();
 
-process.on('uncaughtException', () => {
-  console.log(`❌ UncaughtException detected, shutting down...`);
-  process.exit(1);
-});
+  // graceful shutdown
+  process.on('unhandledRejection', (err) => {
+    console.log(`❌ UnhandledRejection detected, shutting down...`, err);
+    if (server) {
+      server.close(() => process.exit(1));
+    }
+  });
+
+  process.on('uncaughtException', () => {
+    console.log(`❌ UncaughtException detected, shutting down...`);
+    process.exit(1);
+  });
+}
+
+// Export for Vercel serverless
+export default async (req: any, res: any) => {
+  await connectDB();
+  return app(req, res);
+};
