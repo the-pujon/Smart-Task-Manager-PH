@@ -5,6 +5,7 @@ import { MemberRoutes } from '../modules/members/members.route';
 import { ProjectsRoutes } from '../modules/projects/projects.route';
 import { TasksRoutes } from '../modules/tasks/tasks.route';
 import { ActivityLogRoutes } from '../modules/activityLog/activityLog.route';
+import { DashboardRoutes } from '../modules/dashboard/dashboard.route';
 
 
 
@@ -14,6 +15,10 @@ const moduleRoutes = [
   {
     path: '/auth',
     route: AuthRoutes,
+  },
+  {
+    path: '/dashboard',
+    route: DashboardRoutes,
   },
   {
     path: '/teams',
