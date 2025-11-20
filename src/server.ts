@@ -39,50 +39,46 @@
 import { Server } from 'http';
 import app from './app';
 import config from './app/config';
-import mongoose from 'mongoose';
+import { dbConnect } from './app/utils/dbConnect';
 
 let server: Server;
 const port = Number(config.port) || 5000; // fallback port
 
-// MongoDB connection cache for serverless
-let cachedDb: typeof mongoose | null = null;
-
-async function connectDB() {
-  if (cachedDb) {
-    console.log('✅ Using cached MongoDB connection');
-    return cachedDb;
+// Initialize database connection (works for both serverless and traditional)
+// The dbConnect function uses caching, so it only connects once
+dbConnect().catch((err) => {
+  console.error("❌ Initial database connection failed:", err);
+  // Don't exit in serverless, allow retry on next invocation
+  if (process.env.VERCEL !== '1') {
+    process.exit(1);
   }
+});
 
-  try {
-    const db = await mongoose.connect(config.database_url as string);
-    cachedDb = db;
-    console.log("✅ MongoDB database connected successfully");
-    return db;
-  } catch (err) {
-    console.error("❌ MongoDB Connection Error:", err);
-    throw err;
-  }
-}
+// Export app for Vercel serverless
+export default app;
 
-async function main() {
-  try {
-    if (!config.jwt_access_secret) {
-      throw new Error("❌ JWT_ACCESS_SECRET is not set. Check your .env or PM2 env settings.");
-    }
-
-    await connectDB();
-
-    server = app.listen(port, '0.0.0.0', () => {
-      console.log(`🚀 App is listening on port ${port}`);
-    });
-
-  } catch (err) {
-    console.error("❌ Startup Error:", err);
-  }
-}
-
-// Only run the server if not in serverless environment (Vercel)
+// Only run as traditional server if not in serverless environment
 if (process.env.VERCEL !== '1') {
+  async function main() {
+    try {
+      if (!config.jwt_access_secret) {
+        throw new Error("❌ JWT_ACCESS_SECRET is not set. Check your .env or PM2 env settings.");
+      }
+
+      // Database already connecting above, just wait for it
+      console.log("⏳ Waiting for database connection...");
+      await dbConnect(); // Will reuse cached connection
+      console.log("✅ MongoDB database connected successfully");
+
+      server = app.listen(port, '0.0.0.0', () => {
+        console.log(`🚀 App is listening on port ${port}`);
+      });
+
+    } catch (err) {
+      console.error("❌ Startup Error:", err);
+      process.exit(1);
+    }
+  }
   main();
 
   // graceful shutdown
@@ -93,14 +89,18 @@ if (process.env.VERCEL !== '1') {
     }
   });
 
-  process.on('uncaughtException', () => {
-    console.log(`❌ UncaughtException detected, shutting down...`);
+  process.on('uncaughtException', (err) => {
+    console.log(`❌ UncaughtException detected, shutting down...`, err);
     process.exit(1);
   });
-}
 
-// Export for Vercel serverless
-export default async (req: any, res: any) => {
-  await connectDB();
-  return app(req, res);
-};
+  process.on('SIGTERM', () => {
+    console.log('👋 SIGTERM received, shutting down gracefully');
+    if (server) {
+      server.close(() => {
+        console.log('✅ Server closed');
+        process.exit(0);
+      });
+    }
+  });
+}

@@ -12,6 +12,10 @@ import rateLimit from 'express-rate-limit';
 
 const app: Application = express();
 
+// Trust proxy - required when behind a proxy/load balancer (AWS Lambda, nginx, etc.)
+// This allows express-rate-limit to correctly identify users by their IP
+app.set('trust proxy', true);
+
 app.use(express.json());
 app.use(bodyParser.json());
 
@@ -22,21 +26,30 @@ app.use(cors({
     console.log('Request Origin:', origin);
     console.log('Allowed Origins:', allowedOrigins);
 
+    // Allow requests with no origin (e.g. mobile apps, curl, postman)
     if (!origin) {
-      // Allow requests with no origin (e.g. mobile apps, curl)
       return callback(null, true);
     }
 
+    // If no origins are configured, allow all (for development)
+    if (allowedOrigins.length === 0) {
+      return callback(null, true);
+    }
+
+    // Check if origin is in allowed list
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     } else {
+      console.error('CORS blocked origin:', origin);
       return callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['set-cookie'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 app.use(cookieParser());

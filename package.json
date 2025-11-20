@@ -7,9 +7,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "create-module": "ts-node createModule.ts",
-    "build": "tsc",
-    "start": "node dist/server.js"
+    "create-module": "ts-node createModule.ts"
   },
   "author": "Pujon Das Auvi",
   "license": "ISC",
