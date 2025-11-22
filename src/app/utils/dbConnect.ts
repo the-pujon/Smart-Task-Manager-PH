@@ -26,8 +26,9 @@ export const dbConnect = async (): Promise<void> => {
       // Serverless-optimized settings
       maxPoolSize: 10, // Limit connection pool size
       minPoolSize: 1,
-      serverSelectionTimeoutMS: 10000, // 10 seconds timeout for server selection
+      serverSelectionTimeoutMS: 30000, // 30 seconds timeout for server selection (increased for cold starts)
       socketTimeoutMS: 45000, // 45 seconds socket timeout
+      connectTimeoutMS: 30000, // 30 seconds connection timeout
       family: 4, // Use IPv4, skip trying IPv6
       
       // Connection management

@@ -27,7 +27,7 @@ const createMembersService = async (payload: IMember) => {
       throw new AppError(httpStatus.BAD_REQUEST, "Team does not exist");
     }
 
-    const newMember = await Member.create({ ...payload, team: teamId } as any);
+    const newMember = await Member.create({ ...payload, team: teamId } as IMember);
 
     existingTeam.members.push(newMember._id);
     existingTeam.totalMembers = existingTeam.members.length;

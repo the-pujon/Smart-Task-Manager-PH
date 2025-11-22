@@ -57,6 +57,13 @@ const signupUser = async (payload: IUser): Promise<{ newUser: IUser }> => {
     // console.log('Validation:', Date.now() - start);
 
     // Validate password strength
+    if (!payload.password) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Password is required"
+      );
+    }
+
     if (!validatePassword(payload.password)) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
@@ -263,6 +270,13 @@ const loginUser = async (payload: ILoginUser): Promise<{ user: IUser; accessToke
       throw new AppError(
         httpStatus.FORBIDDEN,
         "Account is locked. Please try again later."
+      );
+    }
+
+    if (!user.password) {
+      throw new AppError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "User password not found"
       );
     }
 

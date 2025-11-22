@@ -33,13 +33,12 @@ const memberSchema = new Schema({
 )
 
 
-memberSchema.pre('save', function (next) {
+memberSchema.pre('save', function () {
     if (this.totalTasks > this.capacity) {
         this.overloaded = true;
     } else {
         this.overloaded = false;
     }
-    next();
 });
 
 
