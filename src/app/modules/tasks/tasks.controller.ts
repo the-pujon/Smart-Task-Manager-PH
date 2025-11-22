@@ -84,10 +84,38 @@ const getOverloadedMembersController = catchAsync(async (req, res) => {
     });
 });
 
+const updateTaskController = catchAsync(async (req, res) => {
+    const taskId = req.params.taskId;
+    const updateData = req.body;
+
+    const updatedTask = await TasksService.updateTaskService(taskId, updateData);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Task updated successfully",
+        data: updatedTask,
+    });
+});
+
+const deleteTaskController = catchAsync(async (req, res) => {
+    const taskId = req.params.taskId;
+
+    await TasksService.deleteTaskService(taskId);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Task deleted successfully",
+        data: null,
+    });
+});
+
 export const TasksController = {
     createTaskController,
     getTasksController,
     reassignTasksController,
     getOverloadedMembersController,
+    updateTaskController,
+    deleteTaskController,
 };
-

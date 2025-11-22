@@ -10,6 +10,9 @@ router.post("/create",
     auth("admin", "project_manager", "superAdmin"),
     ProjectsController.createProjectController);
 router.get("/", auth("admin", "project_manager", "superAdmin"), ProjectsController.getProjectsController);
+router.delete("/:id",
+    // auth("admin", "superAdmin"),
+    ProjectsController.deleteProjectController);
 
 export const ProjectsRoutes = router;
 

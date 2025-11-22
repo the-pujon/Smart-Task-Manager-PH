@@ -29,7 +29,20 @@ const getProjectsController = catchAsync(async (req, res) => {
     });
 });
 
+const deleteProjectController = catchAsync(async (req, res) => {
+    const projectId = req.params.id;
+    const result = await ProjectsService.deleteProjectService(projectId);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: result.message,
+        data: null,
+    });
+});
+
 export const ProjectsController = {
     createProjectController,
     getProjectsController,
+    deleteProjectController,
 }

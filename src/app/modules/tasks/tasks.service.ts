@@ -6,11 +6,18 @@ import { ITask } from "./tasks.interface";
 import { Project } from "../projects/projects.model";
 import { Member } from "../members/members.model";
 import { Task } from "./tasks.model";
-import { checkAndReassignIfOverloaded, reassignTasksForOverloadedMembers } from "./tasks.utils";
+import {
+  checkAndReassignIfOverloaded,
+  reassignTasksForOverloadedMembers,
+} from "./tasks.utils";
 import { Types } from "mongoose";
 import { logTaskAssignment } from "../activityLog/activityLog.utils";
 
-const createTaskService = async (payload: ITask, autoReassign: boolean = false, userId?: string) => {
+const createTaskService = async (
+  payload: ITask,
+  autoReassign: boolean = false,
+  userId?: string
+) => {
   try {
     const projectExists = await Project.findById(payload.project);
     if (!projectExists) {
@@ -31,9 +38,16 @@ const createTaskService = async (payload: ITask, autoReassign: boolean = false, 
     }
 
     const newTask = await Task.create(payload);
-    
+
     if (memberExists) {
-      memberExists.totalTasks += 1;
+      if (newTask.status !== "Done") {
+        memberExists.totalTasks += 1;
+      }
+      if (newTask.status === "Done") {
+        memberExists.tasksCompleted += 1;
+      }
+
+      // memberExists.totalTasks += 1;
       await memberExists.save();
 
       // Log task assignment activity
@@ -53,7 +67,7 @@ const createTaskService = async (payload: ITask, autoReassign: boolean = false, 
         );
       }
     }
-    
+
     projectExists.tasks.push(newTask._id);
     await projectExists.save();
 
@@ -79,7 +93,7 @@ const createTaskService = async (payload: ITask, autoReassign: boolean = false, 
 const getTasksService = async () => {
   try {
     const tasks = await Task.find()
-      .populate("project", {tasks: 0})
+      .populate("project", { tasks: 0 })
       .populate("assignedMember");
     return tasks;
   } catch (error) {
@@ -95,7 +109,7 @@ const getTasksService = async () => {
  * @param teamId - The team ID to perform reassignment for
  */
 const reassignTasksService = async (teamId: string) => {
-  console.log(teamId)
+  console.log(teamId);
   try {
     // Validate team ID
     if (!Types.ObjectId.isValid(teamId)) {
@@ -144,9 +158,78 @@ const getOverloadedMembersService = async (teamId: string) => {
   }
 };
 
+const updateTaskService = async (
+  taskId: string,
+  updateData: Partial<ITask>
+) => {
+  try {
+    const updatedTask = await Task.findByIdAndUpdate(taskId, updateData, {
+      new: true,
+    })
+      .populate("project", { tasks: 0 })
+      .populate("assignedMember");
+
+    if (!updatedTask) {
+      throw new AppError(httpStatus.NOT_FOUND, "Task not found");
+    }
+
+    // Additional logic for updating related entities can be added here
+    const updateMember = await Member.findById(updatedTask.assignedMember);
+
+    if (taskId && updateData.status === "Done" && updateMember) {
+      updateMember.tasksCompleted += 1;
+      updateMember.totalTasks -= 1;
+      await updateMember.save();
+    }
+
+    return updatedTask;
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      (error as Error).message || "Failed to update task"
+    );
+  }
+};
+
+const deleteTaskService = async (taskId: string) => {
+  try {
+    const deletedTask = await Task.findByIdAndDelete(taskId);
+
+    if (!deletedTask) {
+      throw new AppError(httpStatus.NOT_FOUND, "Task not found");
+    }
+
+    // Additional logic for updating related entities can be added here
+    const updateMember = await Member.findById(deletedTask.assignedMember);
+
+    if (taskId && updateMember) {
+      if (deletedTask.status === "Done") {
+        updateMember.tasksCompleted = Math.max(
+          0,
+          updateMember.tasksCompleted - 1
+        );
+      } else {
+        updateMember.totalTasks = Math.max(0, updateMember.totalTasks - 1);
+      }
+      await updateMember.save();
+    }
+
+    return;
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      (error as Error).message || "Failed to delete task"
+    );
+  }
+};
+
 export const TasksService = {
   createTaskService,
   getTasksService,
   reassignTasksService,
   getOverloadedMembersService,
+  updateTaskService,
+  deleteTaskService,
 };

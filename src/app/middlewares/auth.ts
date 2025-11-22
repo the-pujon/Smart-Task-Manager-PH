@@ -95,7 +95,7 @@ export const auth = (...requiredRoles: ("admin" | "superAdmin" | "project_manage
 
 
 
-    console.log("here is the token", token)
+    // console.log("here is the token", token)
 
     if (!token) {
       throw new AppError(
